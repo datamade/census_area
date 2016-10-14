@@ -84,6 +84,7 @@ class Census(Census):
             result = self.sf1.get(fields,
                                   {'for': 'block:{}'.format(block_id),
                                    'in' :  within})
+
             if result:
                 result, = result
                 if return_geometry:
@@ -119,7 +120,7 @@ class AreaFilter(object):
     def __init__(self, geojson_geometry, sub_geography_url):
         self.geo = shapely.geometry.shape(geojson_geometry)
 
-        geo_query_args = {'geometry': ',|'.join(str(x) for x in self.geo.bounds),
+        geo_query_args = {'geometry': ','.join(str(x) for x in self.geo.bounds),
                           'geometryType': 'esriGeometryEnvelope',
                           'spatialRel': 'esriSpatialRelEnvelopeIntersects',
                           'inSR' : '4326',
