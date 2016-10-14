@@ -1,8 +1,8 @@
-from census import Census
-from .geojson2esri import geojson2esri
-import esridump
 import json
 import sys
+
+from census import Census
+import esridump
 import shapely.geometry
 
 BLOCK_GROUP_URL = 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/10'
@@ -45,6 +45,7 @@ class Census(Census):
     def geo_blockgroup(self, fields, geojson_geometry):
         filtered_block_groups = AreaFilter(geojson_geometry, BLOCK_GROUP_URL)
 
+        features = []
         for block_group in filtered_block_groups:
             context = {'state' : row['properties']['STATE'],
                        'county' : row['properties']['COUNTY'],
@@ -59,8 +60,8 @@ class Census(Census):
             if result:
                 result, = result
                 if return_geometry:
-                    tract['properties'].update(result)
-                    features.append(tract)
+                    block_group['properties'].update(result)
+                    features.append(block_group)
                 else:
                     features.append(result)
 
@@ -100,7 +101,7 @@ class Census(Census):
     def state_place_blockgroup(self, fields, state, place):
         place_dumper = esridump.EsriDumper(INCORPORATED_PLACES_TIGER,
                                            extra_query_args = {'where' : "'{}'".format(place)})
-        place = next(place_dumper)
+        place = next(iter(place_dumper))
         place_geojson = place['geometry']
 
         yield from self.geo_blockgroup(self, fields, place_geojson)
