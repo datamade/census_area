@@ -47,14 +47,14 @@ class Census(Census):
 
         features = []
         for block_group in filtered_block_groups:
-            context = {'state' : row['properties']['STATE'],
-                       'county' : row['properties']['COUNTY'],
-                       'tract' : row['properties']['TRACT']}
+            context = {'state' : block_group['properties']['STATE'],
+                       'county' : block_group['properties']['COUNTY'],
+                       'tract' : block_group['properties']['TRACT']}
             within = 'state:{state} county:{county} tract:{tract}'.format(**context)
 
-            block_group = row['properties']['BLKGRP']
+            block_group_id = block_group['properties']['BLKGRP']
             result = self.acs5.get(fields,
-                                   {'for': 'block group:{}'.format(block_group),
+                                   {'for': 'block group:{}'.format(block_group_id),
                                     'in' :  within})
 
             if result:
