@@ -89,8 +89,7 @@ class Census(Census):
                        'tract' : block['properties']['TRACT']}
             within = 'state:{state} county:{county} tract:{tract}'.format(**context)
 
-            block_id = '{}{:03d}'.format(block['properties']['BLKGRP'],
-                                         int(block['properties']['BASENAME']))
+            block_id = block['properties']['BLOCK']
             result = self.sf1.get(fields,
                                   {'for': 'block:{}'.format(block_id),
                                    'in' :  within})
@@ -120,7 +119,7 @@ class Census(Census):
         logging.info(place['properties']['NAME'])
         place_geojson = place['geometry']
 
-        yield from self.geo_blockgroup(self, fields, place_geojson, return_geometry)
+        return self.geo_blockgroup(self, fields, place_geojson, return_geometry)
         
     def state_place_block(self, fields, state, place, return_geometry=False):
         search_query = "NAME='{}' AND STATE={}".format(place, state)
