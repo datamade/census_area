@@ -1,9 +1,19 @@
 import json
 import sys
+import logging
 
 from census import Census
 import esridump
 import shapely.geometry
+
+try:  # Python 2.7+
+    from logging import NullHandler
+except ImportError:
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+
+logging.getLogger(__name__).addHandler(NullHandler())
 
 BLOCK_GROUP_URL = 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/10'
 
@@ -12,7 +22,6 @@ BLOCK_2010_URL = 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/
 INCORPORATED_PLACES_TIGER = 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/28'
 
 TRACT_URL = 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/8'
-
 
 class Census(Census):
     def geo_tract(self, fields, geojson_geometry, return_geometry=False):
@@ -74,13 +83,14 @@ class Census(Census):
         filtered_blocks = AreaFilter(geojson_geometry, BLOCK_2010_URL)
 
         features = []
-        for block in filtered_blocks:
+        for i, block in enumerate(filtered_blocks):
             context = {'state' : block['properties']['STATE'],
                        'county' : block['properties']['COUNTY'],
                        'tract' : block['properties']['TRACT']}
             within = 'state:{state} county:{county} tract:{tract}'.format(**context)
 
-            block_id = '{}{:03d}'.format(block['properties']['BLKGRP'], base_name)
+            block_id = '{}{:03d}'.format(block['properties']['BLKGRP'],
+                                         int(block['properties']['BASENAME']))
             result = self.sf1.get(fields,
                                   {'for': 'block:{}'.format(block_id),
                                    'in' :  within})
@@ -93,24 +103,32 @@ class Census(Census):
                 else:
                     features.append(result)
 
+            if i % 100 == 0:
+                logging.info('{} blocks'.format(i))
+
         if return_geometry:
             return {'type': "FeatureCollection", 'features': features}
         else:
             return features
 
 
-    def state_place_blockgroup(self, fields, state, place):
+    def state_place_blockgroup(self, fields, state, place, return_geometry=False):
+        search_query = "NAME='{}' AND STATE={}".format(place, state)
         place_dumper = esridump.EsriDumper(INCORPORATED_PLACES_TIGER,
-                                           extra_query_args = {'where' : "'{}'".format(place)})
+                                           extra_query_args = {'where' : search_query})
         place = next(iter(place_dumper))
+        logging.info(place['properties']['NAME'])
         place_geojson = place['geometry']
 
-        yield from self.geo_blockgroup(self, fields, place_geojson)
+        yield from self.geo_blockgroup(self, fields, place_geojson, return_geometry)
         
     def state_place_block(self, fields, state, place, return_geometry=False):
+        search_query = "NAME='{}' AND STATE={}".format(place, state)
         place_dumper = esridump.EsriDumper(INCORPORATED_PLACES_TIGER,
-                                           extra_query_args = {'where' : "NAME='{}'".format(place)})
+                                           extra_query_args = {'where' : search_query})
+
         place = next(iter(place_dumper))
+        logging.info(place['properties']['NAME'])
         place_geojson = place['geometry']
 
         return self.geo_block(fields, place_geojson, return_geometry)
