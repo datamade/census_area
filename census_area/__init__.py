@@ -5,6 +5,7 @@ import logging
 from census import Census
 import esridump
 import shapely.geometry
+import shapely.geos
 
 try:  # Python 2.7+
     from logging import NullHandler
@@ -50,12 +51,12 @@ class Census(Census):
             return {'type': "FeatureCollection", 'features': features}
         else:
             return features
-    
-    def geo_blockgroup(self, fields, geojson_geometry):
+
+    def geo_blockgroup(self, fields, geojson_geometry, return_geometry=False):
         filtered_block_groups = AreaFilter(geojson_geometry, BLOCK_GROUP_URL)
 
         features = []
-        for block_group in filtered_block_groups:
+        for i, block_group in enumerate(filtered_block_groups):
             context = {'state' : block_group['properties']['STATE'],
                        'county' : block_group['properties']['COUNTY'],
                        'tract' : block_group['properties']['TRACT']}
@@ -73,6 +74,10 @@ class Census(Census):
                     features.append(block_group)
                 else:
                     features.append(result)
+
+            if i % 100 == 0:
+                logging.info('{} blocks'.format(i))
+                    
 
         if return_geometry:
             return {'type': "FeatureCollection", 'features': features}
@@ -119,7 +124,7 @@ class Census(Census):
         logging.info(place['properties']['NAME'])
         place_geojson = place['geometry']
 
-        return self.geo_blockgroup(self, fields, place_geojson, return_geometry)
+        return self.geo_blockgroup(fields, place_geojson, return_geometry)
         
     def state_place_block(self, fields, state, place, return_geometry=False):
         search_query = "NAME='{}' AND STATE={}".format(place, state)
@@ -141,6 +146,7 @@ class AreaFilter(object):
                           'geometryType': 'esriGeometryEnvelope',
                           'spatialRel': 'esriSpatialRelEnvelopeIntersects',
                           'inSR' : '4326',
+                          'geometryPrecision' : 9,
                           'orderByFields': 'OID'}
         self.area_dumper = esridump.EsriDumper(sub_geography_url,
                                                extra_query_args = geo_query_args)
@@ -149,5 +155,9 @@ class AreaFilter(object):
         for area in self.area_dumper:
             area_geo = shapely.geometry.shape(area['geometry'])
             if self.geo.intersects(area_geo):
-                if self.geo.intersection(area_geo).area/area_geo.area > 0.1:
+                try:
+                    intersection = self.geo.intersection(area_geo)
+                except shapely.geos.TopologicalError:
+                    intersection = self.geo.buffer(0).intersection(area_geo.buffer(0))
+                if intersection.area/area_geo.area > 0.1:
                     yield area
