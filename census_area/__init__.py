@@ -18,26 +18,32 @@ except ImportError:
 
 logging.getLogger(__name__).addHandler(NullHandler())
 
-TRACT_URLS = {2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/14',
-              2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/8',
-              2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/8',
-              2015 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/8',
-              2016 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/8'}
-
-BLOCK_GROUP_URLS = {2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/16',
-                    2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/10',
-                    2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/10',
-                    2015 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/10',
-                    2016 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/10'}
-
-BLOCK_URLS = {2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/12'}
-
-INCORPORATED_PLACES_URLS = {2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/34',
-                            2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/26',
-                            2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/26',
-                            2015 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/26',
-                            2016 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2016/MapServer/26'}
-
+GEO_URLS = {
+    'tracts' : {
+        2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/6',
+        2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/14',
+        2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/8',
+        2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/8',
+        2015 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/8',
+        2016 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/8'},
+    'block groups' : {
+        2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/8',
+        2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/16',
+        2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/10',
+        2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/10',
+        2015 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/10',
+        2016 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/10'},
+    'blocks' : {
+        2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/10',
+        2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/12'},
+    'incorporated places' : {
+        2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/24',
+        2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/34',
+        2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/26',
+        2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/26',
+        2015 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/26',
+        2016 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2016/MapServer/26'}
+}
 
 
 class AreaFilter(object):
@@ -65,9 +71,9 @@ class AreaFilter(object):
                     yield area
 
 class GeoClient(census.core.Client):
-    def geo_tract(self, fields, geojson_geometry, return_geometry=False):
+    def geo_tract(self, fields, geojson_geometry):
         filtered_tracts = AreaFilter(geojson_geometry,
-                                     TRACT_URLS[self.default_year])
+                                     GEO_URLS['tracts'][self.default_year])
 
         for tract in filtered_tracts:
             context = {'state' : tract['properties']['STATE'],
@@ -82,9 +88,9 @@ class GeoClient(census.core.Client):
             yield tract, result
 
 
-    def geo_blockgroup(self, fields, geojson_geometry, return_geometry=False):
+    def geo_blockgroup(self, fields, geojson_geometry):
         filtered_block_groups = AreaFilter(geojson_geometry,
-                                           BLOCK_GROUP_URLS[self.default_year])
+                                           GEO_URLS['block groups'][self.default_year])
 
         for block_group in filtered_block_groups:
             context = {'state' : block_group['properties']['STATE'],
@@ -101,9 +107,9 @@ class GeoClient(census.core.Client):
             yield block_group, result
 
 
-    def geo_block(self, fields, geojson_geometry, return_geometry=False):
+    def geo_block(self, fields, geojson_geometry):
         filtered_blocks = AreaFilter(geojson_geometry,
-                                     BLOCK_URLS[self.default_year])
+                                     GEO_URLS['blocks'][self.default_year])
 
         for block in filtered_blocks:
             context = {'state' : block['properties']['STATE'],
@@ -120,8 +126,8 @@ class GeoClient(census.core.Client):
 
 
     def _state_place_area(self, method, fields, state, place, return_geometry=False):
-        search_query = "NAME='{}' AND STATE={}".format(place, state)
-        place_dumper = esridump.EsriDumper(INCORPORATED_PLACES_URLS[self.default_year],
+        search_query = "PLACE='{}' AND STATE={}".format(place, state)
+        place_dumper = esridump.EsriDumper(GEO_URLS['incorporated places'][self.default_year],
                                            extra_query_args = {'where' : search_query,
                                                                'orderByFields': 'OID'})
 
@@ -129,10 +135,10 @@ class GeoClient(census.core.Client):
         logging.info(place['properties']['NAME'])
         place_geojson = place['geometry']
 
-        filtered_areas = method(fields, place_geojson, return_geometry)
+        areas = method(fields, place_geojson)
 
         features = []
-        for i, (area, result) in enumerate(filtered_areas):
+        for i, (area, result) in enumerate(areas):
             if result:
                 result, = result
                 if return_geometry:
@@ -148,7 +154,6 @@ class GeoClient(census.core.Client):
         else:
             return features
                     
-
         
 class ACS5Client(census.core.ACS5Client, GeoClient):
 
@@ -161,17 +166,26 @@ class ACS5Client(census.core.ACS5Client, GeoClient):
         return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
 
 class SF1Client(census.core.SF1Client, GeoClient):
-    @supported_years(2010)
+    @supported_years(2010, 2000)
     def state_place_tract(self, *args, **kwargs):
         return self._state_place_area(self,geo_tract, *args, **kwargs)
 
-    @supported_years(2010)
+    @supported_years(2010, 2000)
     def state_place_blockgroup(self, *args, **kwargs):
         return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
 
-    @supported_years(2010)
+    @supported_years(2010, 2000)
     def state_place_block(self, *args, **kwargs):
         return self._state_place_area(self.geo_block, *args, **kwargs)
+
+class SF3Client(census.core.SF3Client, GeoClient):
+    @supported_years(2000)
+    def state_place_tract(self, *args, **kwargs):
+        return self._state_place_area(self,geo_tract, *args, **kwargs)
+
+    @supported_years(2000)
+    def state_place_blockgroup(self, *args, **kwargs):
+        return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
 
 class Census(census.Census):
     def __init__(self, key, year=None, session=None):
