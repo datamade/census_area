@@ -19,18 +19,22 @@ The call above will return the name of the census tract and the number of homes 
 By default, this method will return a list of dictionaries, where each dictionary represents the data for one tract. 
 
 With the ``keep_geometry`` argument, you can have the method return a geojson-like dictionary. Each tract is a feature, and the census variables about the tract appear in the feature's property attributes.
+::
 
     old_homes_geojson = c.acs5.state_place_tract(('NAME', 'B25034_010E'), 17, 14000), keep_geometry=True)
 
 There are similar methods for block groups
+::
 
     old_home_block_groups = c.acs5.state_place_blockgroups(('NAME', 'B25034_010E'), 17, 14000))
 
 And blocks. Not that block level geographies are only available for the short-form data from the Decennial Census
+::
   
     owner_occupied = c.sf1.state_place_blocks(('NAME', 'H016F0002'), 17, 14000)
 
 The tract and blockgroup methods are also available for the Decennial Census.
+::
 
     owner_occupied_blockgroup = c.sf1.state_place_tract(('NAME', 'H016F0002'), 17, 14000)
     owner_occupied_tract = c.sf1.state_place_blockgroups(('NAME', 'H016F0002'), 17, 14000)
@@ -57,6 +61,7 @@ In addition to these convenient methods, there are three lower level ways to get
 The method takes in the census variables you want and a geojson geometry, and returns a **generator** of the tract shapes, as geojson features, and the variables for that tract. You have to figure out what to do with. In the example above, we make a new geojson object.
 
 Similar methods are provided for block groups and blocks, for the ACS 5-year and Decennial Census.
+::
 
     c.acs5.geo_blockgroup(('NAME', 'B25034_010E'), my_shape_geojson['geometry'])
     
