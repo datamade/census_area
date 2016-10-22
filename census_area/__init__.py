@@ -71,6 +71,7 @@ class AreaFilter(object):
                     yield area
 
 class GeoClient(census.core.Client):
+    @supported_years(2014, 2013, 2010, 2000)
     def geo_tract(self, fields, geojson_geometry):
         filtered_tracts = AreaFilter(geojson_geometry,
                                      GEO_URLS['tracts'][self.default_year])
@@ -85,9 +86,14 @@ class GeoClient(census.core.Client):
                               {'for': 'tract:{}'.format(tract_id),
                                'in' :  within})
 
+            if result:
+                result, = result
+            else:
+                result = {}
+
             yield tract, result
 
-
+    @supported_years(2014, 2013, 2010, 2000)
     def geo_blockgroup(self, fields, geojson_geometry):
         filtered_block_groups = AreaFilter(geojson_geometry,
                                            GEO_URLS['block groups'][self.default_year])
@@ -104,25 +110,12 @@ class GeoClient(census.core.Client):
                               {'for': 'block group:{}'.format(block_group_id),
                                'in' :  within})
 
+            if result:
+                result, = result
+            else:
+                result = {}
+
             yield block_group, result
-
-
-    def geo_block(self, fields, geojson_geometry):
-        filtered_blocks = AreaFilter(geojson_geometry,
-                                     GEO_URLS['blocks'][self.default_year])
-
-        for block in filtered_blocks:
-            context = {'state' : block['properties']['STATE'],
-                       'county' : block['properties']['COUNTY'],
-                       'tract' : block['properties']['TRACT']}
-            within = 'state:{state} county:{county} tract:{tract}'.format(**context)
-
-            block_id = block['properties']['BLOCK']
-            result = self.get(fields,
-                              {'for': 'block:{}'.format(block_id),
-                               'in' :  within})
-
-            yield block, result
 
 
     def _state_place_area(self, method, fields, state, place, return_geometry=False):
@@ -139,13 +132,11 @@ class GeoClient(census.core.Client):
 
         features = []
         for i, (feature, result) in enumerate(areas):
-            if result:
-                result, = result
-                if return_geometry:
-                    feature['properties'].update(result)
-                    features.append(feature)
-                else:
-                    features.append(result)
+            if return_geometry:
+                feature['properties'].update(result)
+                features.append(feature)
+            else:
+                features.append(result)
             if i % 100 == 0:
                 logging.info('{} features'.format(i))
 
@@ -178,6 +169,30 @@ class SF1Client(census.core.SF1Client, GeoClient):
     def state_place_block(self, *args, **kwargs):
         return self._state_place_area(self.geo_block, *args, **kwargs)
 
+    @supported_years(2010, 2000)
+    def geo_block(self, fields, geojson_geometry):
+        filtered_blocks = AreaFilter(geojson_geometry,
+                                     GEO_URLS['blocks'][self.default_year])
+
+        for block in filtered_blocks:
+            context = {'state' : block['properties']['STATE'],
+                       'county' : block['properties']['COUNTY'],
+                       'tract' : block['properties']['TRACT']}
+            within = 'state:{state} county:{county} tract:{tract}'.format(**context)
+
+            block_id = block['properties']['BLOCK']
+            result = self.get(fields,
+                              {'for': 'block:{}'.format(block_id),
+                               'in' :  within})
+
+            if result:
+                result, = result
+            else:
+                result = {}
+
+            yield block, result
+
+
 class SF3Client(census.core.SF3Client, GeoClient):
     @supported_years(2000)
     def state_place_tract(self, *args, **kwargs):
@@ -192,3 +207,4 @@ class Census(census.Census):
         super(Census, self).__init__(key, year, session)
         self.acs5 = ACS5Client(key, year, session)
         self.sf1 = SF1Client(key, year, session)
+        self.sf3 = SF3Client(key, year, session)
