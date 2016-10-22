@@ -63,6 +63,7 @@ class Census(Census):
             within = 'state:{state} county:{county} tract:{tract}'.format(**context)
 
             block_group_id = block_group['properties']['BLKGRP']
+            
             result = self.acs5.get(fields,
                                    {'for': 'block group:{}'.format(block_group_id),
                                     'in' :  within})
@@ -76,7 +77,7 @@ class Census(Census):
                     features.append(result)
 
             if i % 100 == 0:
-                logging.info('{} blocks'.format(i))
+                logging.info('{} block groups'.format(i))
                     
 
         if return_geometry:
@@ -115,18 +116,7 @@ class Census(Census):
         else:
             return features
 
-
-    def state_place_blockgroup(self, fields, state, place, return_geometry=False):
-        search_query = "NAME='{}' AND STATE={}".format(place, state)
-        place_dumper = esridump.EsriDumper(INCORPORATED_PLACES_TIGER,
-                                           extra_query_args = {'where' : search_query})
-        place = next(iter(place_dumper))
-        logging.info(place['properties']['NAME'])
-        place_geojson = place['geometry']
-
-        return self.geo_blockgroup(fields, place_geojson, return_geometry)
-        
-    def state_place_block(self, fields, state, place, return_geometry=False):
+    def _state_place_area(self, method, fields, state, place, return_geometry=False):
         search_query = "NAME='{}' AND STATE={}".format(place, state)
         place_dumper = esridump.EsriDumper(INCORPORATED_PLACES_TIGER,
                                            extra_query_args = {'where' : search_query})
@@ -135,7 +125,18 @@ class Census(Census):
         logging.info(place['properties']['NAME'])
         place_geojson = place['geometry']
 
-        return self.geo_block(fields, place_geojson, return_geometry)
+        return method(fields, place_geojson, return_geometry)
+
+    def state_place_tract(self, *args, **kwargs):
+        return self._state_place_area(self.geo_tract, *args, **kwargs)
+
+    def state_place_blockgroup(self, *args, **kwargs):
+        return self._state_place_blockgroup(self.geo_blockgroup, *args, **kwargs)
+
+    def state_place_block(self, *args, **kwargs):
+        return self._state_place_area(self.geo_block, *args, **kwargs)
+
+
 
 
 class AreaFilter(object):
