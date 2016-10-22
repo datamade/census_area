@@ -32,7 +32,6 @@ BLOCK_GROUP_URLS = {2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services
 
 BLOCK_URLS = {2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/12'}
 
-              
 INCORPORATED_PLACES_URLS = {2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/34',
                             2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/26',
                             2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/26',
@@ -70,7 +69,6 @@ class GeoClient(census.core.Client):
         filtered_tracts = AreaFilter(geojson_geometry,
                                      TRACT_URLS[self.default_year])
 
-        features = []
         for tract in filtered_tracts:
             context = {'state' : tract['properties']['STATE'],
                        'county' : tract['properties']['COUNTY']}
@@ -81,26 +79,14 @@ class GeoClient(census.core.Client):
                               {'for': 'tract:{}'.format(tract_id),
                                'in' :  within})
 
-            if result:
-                result, = result
-                if return_geometry:
-                    tract['properties'].update(result)
-                    features.append(tract)
-                else:
-                    features.append(result)
-
-        if return_geometry:
-            return {'type': "FeatureCollection", 'features': features}
-        else:
-            return features
+            yield tract, result
 
 
     def geo_blockgroup(self, fields, geojson_geometry, return_geometry=False):
         filtered_block_groups = AreaFilter(geojson_geometry,
                                            BLOCK_GROUP_URLS[self.default_year])
 
-        features = []
-        for i, block_group in enumerate(filtered_block_groups):
+        for block_group in filtered_block_groups:
             context = {'state' : block_group['properties']['STATE'],
                        'county' : block_group['properties']['COUNTY'],
                        'tract' : block_group['properties']['TRACT']}
@@ -112,29 +98,14 @@ class GeoClient(census.core.Client):
                               {'for': 'block group:{}'.format(block_group_id),
                                'in' :  within})
 
-            if result:
-                result, = result
-                if return_geometry:
-                    block_group['properties'].update(result)
-                    features.append(block_group)
-                else:
-                    features.append(result)
+            yield block_group, result
 
-            if i % 100 == 0:
-                logging.info('{} block groups'.format(i))
-                    
-
-        if return_geometry:
-            return {'type': "FeatureCollection", 'features': features}
-        else:
-            return features
 
     def geo_block(self, fields, geojson_geometry, return_geometry=False):
         filtered_blocks = AreaFilter(geojson_geometry,
                                      BLOCK_URLS[self.default_year])
 
-        features = []
-        for i, block in enumerate(filtered_blocks):
+        for block in filtered_blocks:
             context = {'state' : block['properties']['STATE'],
                        'county' : block['properties']['COUNTY'],
                        'tract' : block['properties']['TRACT']}
@@ -145,21 +116,8 @@ class GeoClient(census.core.Client):
                               {'for': 'block:{}'.format(block_id),
                                'in' :  within})
 
-            if result:
-                result, = result
-                if return_geometry:
-                    block['properties'].update(result)
-                    features.append(block)
-                else:
-                    features.append(result)
+            yield block, result
 
-            if i % 100 == 0:
-                logging.info('{} blocks'.format(i))
-
-        if return_geometry:
-            return {'type': "FeatureCollection", 'features': features}
-        else:
-            return features
 
     def _state_place_area(self, method, fields, state, place, return_geometry=False):
         search_query = "NAME='{}' AND STATE={}".format(place, state)
@@ -171,7 +129,26 @@ class GeoClient(census.core.Client):
         logging.info(place['properties']['NAME'])
         place_geojson = place['geometry']
 
-        return method(fields, place_geojson, return_geometry)
+        filtered_areas = method(fields, place_geojson, return_geometry)
+
+        features = []
+        for i, (area, result) in enumerate(filtered_areas):
+            if result:
+                result, = result
+                if return_geometry:
+                    area['properties'].update(result)
+                    features.append(area)
+                else:
+                    features.append(result)
+            if i % 100 == 0:
+                logging.info('{} geometries'.format(i))
+
+        if return_geometry:
+            return {'type': "FeatureCollection", 'features': features}
+        else:
+            return features
+                    
+
         
 class ACS5Client(census.core.ACS5Client, GeoClient):
 
