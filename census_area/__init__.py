@@ -131,7 +131,7 @@ class Census(Census):
         return self._state_place_area(self.geo_tract, *args, **kwargs)
 
     def state_place_blockgroup(self, *args, **kwargs):
-        return self._state_place_blockgroup(self.geo_blockgroup, *args, **kwargs)
+        return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
 
     def state_place_block(self, *args, **kwargs):
         return self._state_place_area(self.geo_block, *args, **kwargs)
