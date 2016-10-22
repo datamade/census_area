@@ -2,7 +2,7 @@
 Census Areas
 ============
 
-This library extends the Sunlight Foundation's `Census API Wrapper<https://github.com/sunlightlabs/census/>`_ to allow querying Census tracts, block groups, and blocks by Cenus place, as well as arbitrary geographies.
+This library extends the Sunlight Foundation's `Census API Wrapper <https://github.com/sunlightlabs/census/>`_ to allow querying Census tracts, block groups, and blocks by Cenus place, as well as arbitrary geographies.
 
 Usage
 ======
