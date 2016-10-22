@@ -138,16 +138,16 @@ class GeoClient(census.core.Client):
         areas = method(fields, place_geojson)
 
         features = []
-        for i, (area, result) in enumerate(areas):
+        for i, (feature, result) in enumerate(areas):
             if result:
                 result, = result
                 if return_geometry:
-                    area['properties'].update(result)
-                    features.append(area)
+                    feature['properties'].update(result)
+                    features.append(feature)
                 else:
                     features.append(result)
             if i % 100 == 0:
-                logging.info('{} geometries'.format(i))
+                logging.info('{} features'.format(i))
 
         if return_geometry:
             return {'type': "FeatureCollection", 'features': features}
