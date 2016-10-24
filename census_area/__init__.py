@@ -196,7 +196,7 @@ class SF1Client(census.core.SF1Client, GeoClient):
 class SF3Client(census.core.SF3Client, GeoClient):
     @supported_years(2000)
     def state_place_tract(self, *args, **kwargs):
-        return self._state_place_area(self,geo_tract, *args, **kwargs)
+        return self._state_place_area(self.geo_tract, *args, **kwargs)
 
     @supported_years(2000)
     def state_place_blockgroup(self, *args, **kwargs):
