@@ -22,6 +22,8 @@ GEO_URLS = {
     'tracts' : {
         2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/6',
         2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/14',
+        2011 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/14',
+        2012 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/14',
         2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/8',
         2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/8',
         2015 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/8',
@@ -29,6 +31,8 @@ GEO_URLS = {
     'block groups' : {
         2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/8',
         2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/16',
+        2011 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/16',
+        2012 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/16',
         2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/10',
         2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/10',
         2015 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/10',
@@ -39,6 +43,8 @@ GEO_URLS = {
     'incorporated places' : {
         2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/24',
         2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/34',
+        2011 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/34',
+        2012 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/34',
         2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/26',
         2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/26',
         2015 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/26',
@@ -71,7 +77,7 @@ class AreaFilter(object):
                     yield area
 
 class GeoClient(census.core.Client):
-    @supported_years(2014, 2013, 2010, 2000)
+    @supported_years(2014, 2013, 2012, 2011, 2010, 2000)
     def geo_tract(self, fields, geojson_geometry):
         filtered_tracts = AreaFilter(geojson_geometry,
                                      GEO_URLS['tracts'][self.default_year])
@@ -93,7 +99,7 @@ class GeoClient(census.core.Client):
 
             yield tract, result
 
-    @supported_years(2014, 2013, 2010, 2000)
+    @supported_years(2014, 2013, 2012, 2011, 2010, 2000)
     def geo_blockgroup(self, fields, geojson_geometry):
         filtered_block_groups = AreaFilter(geojson_geometry,
                                            GEO_URLS['block groups'][self.default_year])
@@ -148,11 +154,11 @@ class GeoClient(census.core.Client):
         
 class ACS5Client(census.core.ACS5Client, GeoClient):
 
-    @supported_years(2014, 2013, 2010)
+    @supported_years(2014, 2013, 2012, 2011, 2010)
     def state_place_tract(self, *args, **kwargs):
         return self._state_place_area(self.geo_tract, *args, **kwargs)
 
-    @supported_years(2014, 2013, 2010)
+    @supported_years(2014, 2013, 2012, 2011, 010)
     def state_place_blockgroup(self, *args, **kwargs):
         return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
 
