@@ -78,7 +78,10 @@ class AreaFilter(object):
 
 class GeoClient(census.core.Client):
     @supported_years(2014, 2013, 2012, 2011, 2010, 2000)
-    def geo_tract(self, fields, geojson_geometry):
+    def geo_tract(self, fields, geojson_geometry, year=None):
+        if year is None:
+            year = self.default_year
+        
         filtered_tracts = AreaFilter(geojson_geometry,
                                      GEO_URLS['tracts'][self.default_year])
 
@@ -90,7 +93,7 @@ class GeoClient(census.core.Client):
             tract_id = tract['properties']['TRACT']
             result = self.get(fields,
                               {'for': 'tract:{}'.format(tract_id),
-                               'in' :  within})
+                               'in' :  within}, year)
 
             if result:
                 result, = result
@@ -100,9 +103,12 @@ class GeoClient(census.core.Client):
             yield tract, result
 
     @supported_years(2014, 2013, 2012, 2011, 2010, 2000)
-    def geo_blockgroup(self, fields, geojson_geometry):
+    def geo_blockgroup(self, fields, geojson_geometry, year=None):
+        if year is None:
+            year = self.default_year
+
         filtered_block_groups = AreaFilter(geojson_geometry,
-                                           GEO_URLS['block groups'][self.default_year])
+                                           GEO_URLS['block groups'][year])
 
         for block_group in filtered_block_groups:
             context = {'state' : block_group['properties']['STATE'],
@@ -114,7 +120,7 @@ class GeoClient(census.core.Client):
             
             result = self.get(fields,
                               {'for': 'block group:{}'.format(block_group_id),
-                               'in' :  within})
+                               'in' :  within}, year)
 
             if result:
                 result, = result
@@ -124,9 +130,12 @@ class GeoClient(census.core.Client):
             yield block_group, result
 
 
-    def _state_place_area(self, method, fields, state, place, return_geometry=False):
+    def _state_place_area(self, method, fields, state, place, year=None, return_geometry=False):
+        if year is None:
+            year = self.default_year
+        
         search_query = "PLACE='{}' AND STATE={}".format(place, state)
-        place_dumper = esridump.EsriDumper(GEO_URLS['incorporated places'][self.default_year],
+        place_dumper = esridump.EsriDumper(GEO_URLS['incorporated places'][year],
                                            extra_query_args = {'where' : search_query,
                                                                'orderByFields': 'OID'})
 
@@ -134,7 +143,7 @@ class GeoClient(census.core.Client):
         logging.info(place['properties']['NAME'])
         place_geojson = place['geometry']
 
-        areas = method(fields, place_geojson)
+        areas = method(fields, place_geojson, year)
 
         features = []
         for i, (feature, result) in enumerate(areas):
@@ -176,9 +185,12 @@ class SF1Client(census.core.SF1Client, GeoClient):
         return self._state_place_area(self.geo_block, *args, **kwargs)
 
     @supported_years(2010, 2000)
-    def geo_block(self, fields, geojson_geometry):
+    def geo_block(self, fields, geojson_geometry, year):
+        if year is None:
+            year = self.default_year
+        
         filtered_blocks = AreaFilter(geojson_geometry,
-                                     GEO_URLS['blocks'][self.default_year])
+                                     GEO_URLS['blocks'][year])
 
         for block in filtered_blocks:
             context = {'state' : block['properties']['STATE'],
@@ -189,7 +201,7 @@ class SF1Client(census.core.SF1Client, GeoClient):
             block_id = block['properties']['BLOCK']
             result = self.get(fields,
                               {'for': 'block:{}'.format(block_id),
-                               'in' :  within})
+                               'in' :  within}, year)
 
             if result:
                 result, = result
