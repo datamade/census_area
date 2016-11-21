@@ -27,10 +27,10 @@ The call above will return the name of the census tract and the number of homes 
 
 By default, this method will return a list of dictionaries, where each dictionary represents the data for one tract. 
 
-With the ``keep_geometry`` argument, you can have the method return a geojson-like dictionary. Each tract is a feature, and the census variables about the tract appear in the feature's property attributes.
+With the ``return_geometry`` argument, you can have the method return a geojson-like dictionary. Each tract is a feature, and the census variables about the tract appear in the feature's property attributes.
 ::
 
-    old_homes_geojson = c.acs5.state_place_tract(('NAME', 'B25034_010E'), 17, 14000), keep_geometry=True)
+    old_homes_geojson = c.acs5.state_place_tract(('NAME', 'B25034_010E'), 17, 14000), return_geometry=True)
 
 There are similar methods for block groups
 ::
