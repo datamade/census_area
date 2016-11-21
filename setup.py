@@ -8,7 +8,7 @@ except ImportError :
 
 setup(
     name='census_area',
-    url='https://github.com/fgregg/census_area',
+    url='https://github.com/datamade/census_area',
     version='0.1',
     author='Forest Gregg',
     author_email='fgregg@datamade.us',
