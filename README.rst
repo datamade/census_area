@@ -2,7 +2,16 @@
 Census Areas
 ============
 
-This library extends the Sunlight Foundation's `Census API Wrapper <https://github.com/sunlightlabs/census/>`_ to allow querying Census tracts, block groups, and blocks by Census place, as well as by  arbitrary geographies.
+This Python library extends the Sunlight Foundation's `Census API Wrapper <https://github.com/sunlightlabs/census/>`_ to allow querying Census tracts, block groups, and blocks by Census place, as well as by  arbitrary geographies.
+
+Setup
+======
+
+Get the library and its dependencies using `pip <https://pypi.python.org/pypi/pip>`_:
+
+::
+
+    pip install census_area
 
 Usage
 ======
@@ -71,3 +80,20 @@ Similar methods are provided for block groups and blocks, for the ACS 5-year and
     
     c.sf3.state_place_tract('NAME', 'H034010'), my_shape_geojson['geometry'])
     c.sf3.state_place_blockgroup('NAME', 'H034010'), my_shape_geojson['geometry'])
+
+Errors and Bugs
+===============
+
+If something is not behaving intuitively, it is a bug and should be reported.
+Report it here by creating an issue: https://github.com/datamade/census_area/issues
+
+Help us fix the problem as quickly as possible by following `Mozilla's guidelines for reporting bugs. <https://developer.mozilla.org/en-US/docs/Mozilla/QA/Bug_writing_guidelines#General_Outline_of_a_Bug_Report>`_
+
+Patches and Pull Requests
+=========================
+
+Your patches are welcome. Here's our suggested workflow:
+
+* Fork the project.
+* Make your feature addition or bug fix.
+* Send us a pull request with a description of your work. Bonus points for topic branches!
