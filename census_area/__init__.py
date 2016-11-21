@@ -20,6 +20,7 @@ logging.getLogger(__name__).addHandler(NullHandler())
 
 GEO_URLS = {
     'tracts' : {
+        1990 : 'https://gis.uspatial.umn.edu/arcgis/rest/services/nhgis/Census_Tracts_1910_2014/MapServer/8',
         2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/6',
         2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/14',
         2011 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/14',
@@ -41,6 +42,7 @@ GEO_URLS = {
         2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/10',
         2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/12'},
     'incorporated places' : {
+        1990 : 'https://gis.uspatial.umn.edu/arcgis/rest/services/nhgis/Places_1980_2014/MapServer/1',
         2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/24',
         2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/34',
         2011 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/34',
@@ -172,7 +174,7 @@ class ACS5Client(census.core.ACS5Client, GeoClient):
         return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
 
 class SF1Client(census.core.SF1Client, GeoClient):
-    @supported_years(2010, 2000)
+    @supported_years(2010, 2000, 1990)
     def state_place_tract(self, *args, **kwargs):
         return self._state_place_area(self.geo_tract, *args, **kwargs)
 
@@ -212,7 +214,7 @@ class SF1Client(census.core.SF1Client, GeoClient):
 
 
 class SF3Client(census.core.SF3Client, GeoClient):
-    @supported_years(2000)
+    @supported_years(2000, 1990)
     def state_place_tract(self, *args, **kwargs):
         return self._state_place_area(self.geo_tract, *args, **kwargs)
 

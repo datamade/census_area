@@ -9,13 +9,12 @@ except ImportError :
 setup(
     name='census_area',
     url='https://github.com/datamade/census_area',
-    version='0.1',
+    version='0.2',
     author='Forest Gregg',
     author_email='fgregg@datamade.us',
     description='Census data for arbitrary geographies',
     packages=['census_area'],
     install_requires=['esridump', 'census', 'shapely'],
-    dependency_links=['https://github.com/openaddresses/pyesridump/master/tarball/'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
