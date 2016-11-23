@@ -37,7 +37,7 @@ There are similar methods for block groups
 
     old_home_block_groups = c.acs5.state_place_blockgroup(('NAME', 'B25034_010E'), 17, 14000))
 
-And blocks. Not that block level geographies are only available for the short-form data from the Decennial Census
+And blocks. Note that block level geographies are only available for the short-form data from the Decennial Census
 ::
   
     owner_occupied = c.sf1.state_place_block(('NAME', 'H016F0002'), 17, 14000)
