@@ -9,6 +9,8 @@ import esridump
 import shapely.geometry
 import shapely.geos
 
+from lodes import OnTheMap
+
 try:  # Python 2.7+
     from logging import NullHandler
 except ImportError:
@@ -152,7 +154,7 @@ class GeoClient(census.core.Client):
             if return_geometry:
                 feature['properties'].update(result)
                 features.append(feature)
-            else:
+             else:
                 features.append(result)
             if i % 100 == 0:
                 logging.info('{} features'.format(i))

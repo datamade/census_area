@@ -10,6 +10,9 @@ import shapely.geometry
 import shapely.ops
 import pyproj
 
+from . import AreaFilter, GEO_URLS
+from .variables import LODES_VARIABLES
+
 class OnTheMap(requests.Session):
     BASE = 'https://onthemap.ces.census.gov'
 
@@ -114,6 +117,30 @@ class OnTheMap(requests.Session):
             for row in reader.records():
                 yield dict(zip(fields, row))
 
+    def _geojson(self, geojson_geometry, reader):
+        blocks = AreaFilter(geojson_geometry,
+                            GEO_URLS['blocks'][2010])
+
+        data = {}
+        for block in reader:
+            block_id = block.pop('id')
+            data[block_id] = block
+
+        features = []
+        for feature in blocks:
+            block_id = feature['properties']['GEOID']
+            if block_id in data:
+                legible = {LODES_VARIABLES[k]: v
+                           for k, v
+                           in data[block_id].items()}
+                feature['properties'].update(legible)
+                features.append(feature)
+
+
+        return {'type': "FeatureCollection", 'features': features}
+
+        
+
     def area_query(self, geojson, area='work', job_type='all', year=2014):
         selection_id = self._select_area(geojson)
         report_id = self._report(selection_id, True, area, job_type, year)
@@ -130,17 +157,27 @@ class OnTheMap(requests.Session):
         for row in reader:
             yield row
             
-    def residents(self, geojson, job_type='all', year=2014):
-        yield from self.area_query(geojson, 'home', job_type, year)
+    def residents(self, geojson, job_type='all', year=2014, return_geometry=True):
+        reader = self.area_query(geojson, 'home', job_type, year)
+        if return_geometry:
+            return self._geojson(geojson, reader)
+        else:
+            return list(reader)
 
-    def workforce(self, geojson, job_type='all', year=2014):
-        yield from self.area_query(geojson, 'work', job_type, year)
+    def workforce(self, geojson, job_type='all', year=2014, return_geometry=True):
+        reader = self.area_query(geojson, 'work', job_type, year)
+        if return_geometry:
+            return self._geojson(geojson, reader)
+        else:
+            return list(reader)
 
-    def commutes_to(self, geojson, job_type='all', year=2014):
-        yield from self.od_query(geojson, 'work', job_type, year)
+    def commutes_to(self, geojson, job_type='all', year=2014, return_geometry=True):
+        reader = self.od_query(geojson, 'work', job_type, year)
+        return list(reader)
 
-    def commutes_from(self, geojson, job_type='all', year=2014):
-        yield from self.od_query(geojson, 'home', job_type, year)
+    def commutes_from(self, geojson, job_type='all', year=2014, return_geometry=True):
+        reader = yield from self.od_query(geojson, 'home', job_type, year)
+        return list(reader)
 
         
 def project(geom):
@@ -150,46 +187,3 @@ def project(geom):
                                  geom)
 
 
-geojson = """{
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {},
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -87.69149780273438,
-              41.747750439738155
-            ],
-            [
-              -87.69149780273438,
-              41.806125492238664
-            ],
-            [
-              -87.61184692382812,
-              41.806125492238664
-            ],
-            [
-              -87.61184692382812,
-              41.747750439738155
-            ],
-            [
-              -87.69149780273438,
-              41.747750439738155
-            ]
-          ]
-        ]
-      }
-    }
-  ]
-}"""
-
-
-otm = OnTheMap()
-print(list(otm.residents(json.loads(geojson)['features'][0]['geometry'], job_type='all', year=2014)))
-print(list(otm.workforce(json.loads(geojson)['features'][0]['geometry'], job_type='all', year=2014)))
-print(list(otm.commutes_to(json.loads(geojson)['features'][0]['geometry'], job_type='all', year=2014)))
-print(list(otm.commutes_from(json.loads(geojson)['features'][0]['geometry'], job_type='all', year=2014)))

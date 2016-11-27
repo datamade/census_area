@@ -14,7 +14,7 @@ setup(
     author_email='fgregg@datamade.us',
     description='Census data for arbitrary geographies',
     packages=['census_area'],
-    install_requires=['esridump', 'census', 'shapely'],
+    install_requires=['esridump', 'census', 'shapely', 'shapefile', 'shapely', 'pyproj'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
