@@ -57,7 +57,8 @@ In addition to these convenient methods, there are three lower level ways to get
     
     import json
     
-    my_shape_geojson = json.load('my_shape.geojson')
+    with open('my_shape.geojson') as infile:
+        my_shape_geojson = json.load(infile)
     features = []
     old_homes = c.acs5.geo_tract(('NAME', 'B25034_010E'), my_shape_geojson['geometry'])
     for tract_geojson, tract_data in old_homes:
