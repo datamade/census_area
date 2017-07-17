@@ -1,15 +1,16 @@
 import json
 import sys
 import logging
+import collections
+import re
 
 import census
 from census.core import supported_years
-
+import census.math
 import esridump
-import shapely.geometry
-import shapely.geos
 
-from lodes import OnTheMap
+from .lodes import OnTheMap
+from .core import AreaFilter, GEO_URLS
 
 try:  # Python 2.7+
     from logging import NullHandler
@@ -20,65 +21,6 @@ except ImportError:
 
 logging.getLogger(__name__).addHandler(NullHandler())
 
-GEO_URLS = {
-    'tracts' : {
-        1990 : 'https://gis.uspatial.umn.edu/arcgis/rest/services/nhgis/Census_Tracts_1910_2014/MapServer/8',
-        2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/6',
-        2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/14',
-        2011 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/14',
-        2012 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/14',
-        2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/8',
-        2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/8',
-        2015 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/8',
-        2016 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/8'},
-    'block groups' : {
-        2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/8',
-        2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/16',
-        2011 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/16',
-        2012 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/16',
-        2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/10',
-        2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/10',
-        2015 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/10',
-        2016 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/10'},
-    'blocks' : {
-        2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/10',
-        2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/12'},
-    'incorporated places' : {
-        1990 : 'https://gis.uspatial.umn.edu/arcgis/rest/services/nhgis/Places_1980_2014/MapServer/1',
-        2000 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/24',
-        2010 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/34',
-        2011 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/34',
-        2012 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2010/MapServer/34',
-        2013 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2013/MapServer/26',
-        2014 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2014/MapServer/26',
-        2015 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2015/MapServer/26',
-        2016 : 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2016/MapServer/26'}
-}
-
-
-class AreaFilter(object):
-    def __init__(self, geojson_geometry, sub_geography_url):
-        self.geo = shapely.geometry.shape(geojson_geometry)
-
-        geo_query_args = {'geometry': ','.join(str(x) for x in self.geo.bounds),
-                          'geometryType': 'esriGeometryEnvelope',
-                          'spatialRel': 'esriSpatialRelEnvelopeIntersects',
-                          'inSR' : '4326',
-                          'geometryPrecision' : 9,
-                          'orderByFields': 'OID'}
-        self.area_dumper = esridump.EsriDumper(sub_geography_url,
-                                               extra_query_args = geo_query_args)
-
-    def __iter__(self):
-        for area in self.area_dumper:
-            area_geo = shapely.geometry.shape(area['geometry'])
-            if self.geo.intersects(area_geo):
-                try:
-                    intersection = self.geo.intersection(area_geo)
-                except shapely.geos.TopologicalError:
-                    intersection = self.geo.buffer(0).intersection(area_geo.buffer(0))
-                if intersection.area/area_geo.area > 0.1:
-                    yield area
 
 class GeoClient(census.core.Client):
     @supported_years(2014, 2013, 2012, 2011, 2010, 2000)
@@ -154,7 +96,7 @@ class GeoClient(census.core.Client):
             if return_geometry:
                 feature['properties'].update(result)
                 features.append(feature)
-             else:
+            else:
                 features.append(result)
             if i % 100 == 0:
                 logging.info('{} features'.format(i))
@@ -163,7 +105,55 @@ class GeoClient(census.core.Client):
             return {'type': "FeatureCollection", 'features': features}
         else:
             return features
-                    
+
+    def geo(self, fields, geojson_geometry, year=None, resolution='tract', ignore_missing = False):
+        if year is None:
+            year = self.default_year
+
+        fields = census.core.list_or_str(fields)
+
+        for field in fields:
+            if self._field_type(field, year) is not int:
+                raise ValueError('{} is not a variable that can be aggregated your geography'.format(field))
+
+        resolutions = {'tract': self.geo_tract,
+                       'blockgroup': self.geo_blockgroup}
+
+        try:
+            geo_units = resolutions[resolution]
+        except KeyError:
+            raise ValueError('{} is not a valid resolution. Choose one of {}'.format(resolution, resolution.keys()))
+
+        features = geo_units(fields, geojson_geometry, year=year)
+
+        return self._aggregate(fields, features, year, ignore_missing)
+
+
+    def _aggregate(self, fields, features, year, ignore_missing):
+        aggregated_features = collections.defaultdict(list)
+        for _, feature in features:
+            if ignore_missing and None in feature.values():
+                continue
+            for field in fields:
+                aggregated_features[field].append(feature[field])
+
+        collapsed = {}
+                
+        for field in fields:
+            if field.endswith('E'):
+                agg = sum(aggregated_features[field])
+            elif field.endswith('M'):
+                e_field = field[:-1] + 'E'
+                agg = census.math.moe_of_sum(aggregated_features[e_field],
+                                             aggregated_features[field])
+            else:
+                raise ValueError("Don't know how to aggregate this variable {}".format(feature))
+
+            collapsed[field] = agg
+
+        return collapsed
+
+
         
 class ACS5Client(census.core.ACS5Client, GeoClient):
 
@@ -230,3 +220,4 @@ class Census(census.Census):
         self.acs5 = ACS5Client(key, year, session)
         self.sf1 = SF1Client(key, year, session)
         self.sf3 = SF3Client(key, year, session)
+
