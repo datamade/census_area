@@ -23,7 +23,7 @@ logging.getLogger(__name__).addHandler(NullHandler())
 
 
 class GeoClient(census.core.Client):
-    @supported_years(2014, 2013, 2012, 2011, 2010, 2000)
+    @supported_years(2015, 2014, 2013, 2012, 2011, 2010, 2000)
     def geo_tract(self, fields, geojson_geometry, year=None):
         if year is None:
             year = self.default_year
@@ -48,7 +48,7 @@ class GeoClient(census.core.Client):
 
             yield tract, result
 
-    @supported_years(2014, 2013, 2012, 2011, 2010, 2000)
+    @supported_years(2015, 2014, 2013, 2012, 2011, 2010, 2000)
     def geo_blockgroup(self, fields, geojson_geometry, year=None):
         if year is None:
             year = self.default_year
@@ -157,11 +157,11 @@ class GeoClient(census.core.Client):
         
 class ACS5Client(census.core.ACS5Client, GeoClient):
 
-    @supported_years(2014, 2013, 2012, 2011, 2010)
+    @supported_years(2015, 2014, 2013, 2012, 2011, 2010)
     def state_place_tract(self, *args, **kwargs):
         return self._state_place_area(self.geo_tract, *args, **kwargs)
 
-    @supported_years(2014, 2013, 2012, 2011, 2010)
+    @supported_years(2015, 2014, 2013, 2012, 2011, 2010)
     def state_place_blockgroup(self, *args, **kwargs):
         return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
 
