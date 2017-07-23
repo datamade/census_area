@@ -23,8 +23,8 @@ logging.getLogger(__name__).addHandler(NullHandler())
 
 
 class GeoClient(census.core.Client):
-    @supported_years(2015, 2014, 2013, 2012, 2011, 2010, 2000)
-    def geo_tract(self, fields, geojson_geometry, year=None):
+    @supported_years(2015, 2014, 2013, 2012, 2011, 2010, 2000, 1990)
+    def geo_tract(self, fields, geojson_geometry, year=None, **kwargs):
         if year is None:
             year = self.default_year
         
@@ -39,7 +39,7 @@ class GeoClient(census.core.Client):
             tract_id = tract['properties']['TRACT']
             result = self.get(fields,
                               {'for': 'tract:{}'.format(tract_id),
-                               'in' :  within}, year)
+                               'in' :  within}, year, **kwargs)
 
             if result:
                 result, = result
@@ -49,7 +49,7 @@ class GeoClient(census.core.Client):
             yield tract, result
 
     @supported_years(2015, 2014, 2013, 2012, 2011, 2010, 2000)
-    def geo_blockgroup(self, fields, geojson_geometry, year=None):
+    def geo_blockgroup(self, fields, geojson_geometry, year=None, **kwargs):
         if year is None:
             year = self.default_year
 
@@ -66,7 +66,7 @@ class GeoClient(census.core.Client):
             
             result = self.get(fields,
                               {'for': 'block group:{}'.format(block_group_id),
-                               'in' :  within}, year)
+                               'in' :  within}, year, **kwargs)
 
             if result:
                 result, = result
@@ -76,7 +76,7 @@ class GeoClient(census.core.Client):
             yield block_group, result
 
 
-    def _state_place_area(self, method, fields, state, place, year=None, return_geometry=False):
+    def _state_place_area(self, method, fields, state, place, year=None, return_geometry=False, **kwargs):
         if year is None:
             year = self.default_year
         
@@ -89,7 +89,7 @@ class GeoClient(census.core.Client):
         logging.info(place['properties']['NAME'])
         place_geojson = place['geometry']
 
-        areas = method(fields, place_geojson, year)
+        areas = method(fields, place_geojson, year, **kwargs)
 
         features = []
         for i, (feature, result) in enumerate(areas):
@@ -106,15 +106,23 @@ class GeoClient(census.core.Client):
         else:
             return features
 
-    def geo(self, fields, geojson_geometry, year=None, resolution='tract', ignore_missing = False):
+    def geo(self, fields, geojson_geometry, year=None, resolution='tract', ignore_missing = False, **kwargs):
         if year is None:
             year = self.default_year
-
+            
         fields = census.core.list_or_str(fields)
 
-        for field in fields:
-            if self._field_type(field, year) is not int:
-                raise ValueError('{} is not a variable that can be aggregated your geography'.format(field))
+        as_acs = kwargs.get('as_acs', False)
+        if as_acs:
+            acs_fields = self._cross(fields)
+            for field in acs_fields:
+                if self._field_type(field, year) is not int:
+                    raise ValueError('{} is not a variable that can be aggregated your geography'.format(field))
+        else:
+            for field in fields:
+                if self._field_type(field, year) is not int:
+                    raise ValueError('{} is not a variable that can be aggregated your geography'.format(field))
+
 
         resolutions = {'tract': self.geo_tract,
                        'blockgroup': self.geo_blockgroup}
@@ -124,7 +132,7 @@ class GeoClient(census.core.Client):
         except KeyError:
             raise ValueError('{} is not a valid resolution. Choose one of {}'.format(resolution, resolution.keys()))
 
-        features = geo_units(fields, geojson_geometry, year=year)
+        features = geo_units(fields, geojson_geometry, year=year, **kwargs)
 
         return self._aggregate(fields, features, year, ignore_missing)
 
