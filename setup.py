@@ -6,9 +6,12 @@ try:
 except ImportError :
     raise ImportError("setuptools module required, please go to https://pypi.python.org/pypi/setuptools and follow the instructions for installing setuptools")
 
+long_description = open('README.rst').read()
+
 setup(
     name='census_area',
     url='https://github.com/datamade/census_area',
+    long_description=long_description,
     version='0.3',
     author='Forest Gregg',
     author_email='fgregg@datamade.us',
