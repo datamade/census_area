@@ -12,7 +12,7 @@ setup(
     name='census_area',
     url='https://github.com/datamade/census_area',
     long_description=long_description,
-    version='0.3',
+    version='0.3.1',
     author='Forest Gregg',
     author_email='fgregg@datamade.us',
     description='Census data for arbitrary geographies',
