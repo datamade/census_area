@@ -61,14 +61,14 @@ In addition to these convenient methods, there are three lower level ways to get
         my_shape_geojson = json.load(infile)
     features = []
     old_homes = c.acs5.geo_tract(('NAME', 'B25034_010E'), my_shape_geojson['geometry'])
-    for tract_geojson, tract_data in old_homes:
+    for tract_geojson, tract_data, tract_proportion in old_homes:
          tract_geojson['properties'].update(tract_data)
          features.append(tract)
          
     my_shape_with_new_data_geojson = {'type': "FeatureCollection", 'features': features}
     
 
-The method takes in the census variables you want and a geojson geometry, and returns a **generator** of the tract shapes, as geojson features, and the variables for that tract. You have to figure out what to do with it. In the example above, we make a new geojson object.
+The method takes in the census variables you want and a geojson geometry, and returns a **generator** of the tract shapes, as geojson features, and the variables for that tract. Additionally, the generator returns a "tract proportion"; this is the proportion of the area of the tract that falls within your target shape.
 
 Similar methods are provided for block groups and blocks, for the ACS 5-year and Decennial Census.
 ::
