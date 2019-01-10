@@ -1,0 +1,28 @@
+sudo: false
+branches:
+  only:
+  - master
+  - "/^v.*$/"
+notifications:
+  email:
+    on_success: change
+    on_failure: always
+language: python
+python:
+- 3.6
+- 3.5
+- 3.4
+- 2.7
+install:
+- pip install --upgrade pip setuptools
+- pip install -e .
+script:
+- true
+deploy:
+  provider: pypi
+  user: datamade.wheelbuilder
+  on:
+    tags: true
+  distributions: sdist bdist_wheel
+  password:
+    secure: WmGQpam6de7XS+pC9kgX1YqBuiws9AstyGxnp0zj71YVlwa17tQN9L1kYl1czehg0HDs18oDAW5anDeypkWXHwsdhAxPRaR4fWfe3Sbq5FF8+8FeVgpacXQvCQ/HM0AQNUbaP/HoQfQhDkpa5n/V/t8f4w/mf3MIjZHDXnGRiPtnhOrEFwK/5Lw2Efo9kurubQztJxN0z5wRKKeIdnfdUhU28DRvN1lYKYpU6fe16rQq2moobpD0PAARAkNSTHOrHr14r+qpiha8JYTeGJwfC19U0awZYTKOSJc37y2jrb2jhAu3X45a86G9wGaSpZMV8OEWg0hGCvIA2Mp9A+PfIP7Se9KtBl/frJ8HEEMlC6ed+P8slGM82S1rPe8cAd7kEXMyFPxuIAqfFfQ0M/nCOOtV4gmoVzFM36eYXwWMcFucOmHVOLRAhrbRNGBr5L/ReraBK9j5pSN5AC3qBBF4xQsu1nLxSaOE+1cTmp3E2Q2tJDkY17ugRtS7uPEeGhyDHhA/9787EGFjnJOQQG8xQGYjO1574D3OSXitXH2dX/gvb5BahkFphbVLrOUxYYwjrZxlpJSnhbI8ZdVC2LzKY+gjaY12elxR6tQQ5uC1aQXuoB5/50exJMJ36qC4ea9OHhs8JQWbG019jeyfF8leu42JQd4PBoVn4fson7rDtP8=
