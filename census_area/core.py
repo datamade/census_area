@@ -1,7 +1,6 @@
 import shapely.geometry
 import shapely.geos
 import esridump
-import tqdm
 
 GEO_URLS = {
     'tracts': {
