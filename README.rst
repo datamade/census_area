@@ -48,8 +48,8 @@ The tract and blockgroup methods are also available for the Decennial Census.
     owner_occupied_blockgroup = c.sf1.state_place_tract(('NAME', 'H016F0002'), 17, 14000)
     owner_occupied_tract = c.sf1.state_place_blockgroup(('NAME', 'H016F0002'), 17, 14000)
     
-    old_homes = c.sf3.state_place_tract('NAME', 'H034010'), 17, 14000)
-    old_homes = c.sf3.state_place_blockgroup('NAME', 'H034010'), 17, 14000)
+    old_homes = c.sf1.state_place_tract('NAME', 'H034010'), 17, 14000)
+    old_homes = c.sf1.state_place_blockgroup('NAME', 'H034010'), 17, 14000)
 
 In addition to these convenient methods, there are three lower level ways to get census tracts, blocks, and groups for arbitrary geometries.
 
@@ -79,8 +79,8 @@ Similar methods are provided for block groups and blocks, for the ACS 5-year and
     c.sf1.geo_blockgroup(('NAME', 'H016F0002'), my_shape_geojson['geometry'])
     c.sf1.geo_tract(('NAME', 'H016F0002'), my_shape_geojson['geometry'])
     
-    c.sf3.state_place_tract('NAME', 'H034010'), my_shape_geojson['geometry'])
-    c.sf3.state_place_blockgroup('NAME', 'H034010'), my_shape_geojson['geometry'])
+    c.sf1.state_place_tract('NAME', 'H034010'), my_shape_geojson['geometry'])
+    c.sf1.state_place_blockgroup('NAME', 'H034010'), my_shape_geojson['geometry'])
 
 Team
 ====

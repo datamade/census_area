@@ -157,25 +157,25 @@ class ACS5Client(census.core.ACS5Client, GeoClient):
     def state_place_tract(self, *args, **kwargs):
         return self._state_place_area(self.geo_tract, *args, **kwargs)
 
-    @supported_years(2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010)
+    @supported_years(2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010)
     def state_place_blockgroup(self, *args, **kwargs):
         return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
 
 
 class SF1Client(census.core.SF1Client, GeoClient):
-    @supported_years(2010, 2000, 1990)
+    @supported_years(2010)
     def state_place_tract(self, *args, **kwargs):
         return self._state_place_area(self.geo_tract, *args, **kwargs)
 
-    @supported_years(2010, 2000)
+    @supported_years(2010)
     def state_place_blockgroup(self, *args, **kwargs):
         return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
 
-    @supported_years(2010, 2000)
+    @supported_years(2010)
     def state_place_block(self, *args, **kwargs):
         return self._state_place_area(self.geo_block, *args, **kwargs)
 
-    @supported_years(2010, 2000)
+    @supported_years(2010)
     def geo_block(self, fields, geojson_geometry, year):
         if year is None:
             year = self.default_year
@@ -200,16 +200,6 @@ class SF1Client(census.core.SF1Client, GeoClient):
                 result = {}
 
             yield block, result, intersection_proportion
-            
-
-class SF3Client(census.core.SF3Client, GeoClient):
-    @supported_years(2000, 1990)
-    def state_place_tract(self, *args, **kwargs):
-        return self._state_place_area(self.geo_tract, *args, **kwargs)
-
-    @supported_years(2000)
-    def state_place_blockgroup(self, *args, **kwargs):
-        return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
 
 
 class Census(census.Census):
@@ -217,5 +207,3 @@ class Census(census.Census):
         super(Census, self).__init__(key, year, session)
         self.acs5 = ACS5Client(key, year, session)
         self.sf1 = SF1Client(key, year, session)
-        self.sf3 = SF3Client(key, year, session)
-
