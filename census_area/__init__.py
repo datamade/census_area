@@ -15,7 +15,7 @@ logging.getLogger(__name__).addHandler(NullHandler())
 
 class GeoClient(census.core.Client):
 
-    @supported_years(2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2000, 1990)
+    @supported_years(2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2000)
     def geo_tract(self, fields, geojson_geometry, year=None, **kwargs):
         if year is None:
             year = self.default_year
@@ -40,7 +40,7 @@ class GeoClient(census.core.Client):
 
             yield tract, result, intersection_proportion
 
-    @supported_years(2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2000)
+    @supported_years(2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010)
     def geo_blockgroup(self, fields, geojson_geometry, year=None, **kwargs):
         if year is None:
             year = self.default_year
@@ -201,9 +201,49 @@ class SF1Client(census.core.SF1Client, GeoClient):
 
             yield block, result, intersection_proportion
 
+class PLClient(census.core.PLClient, GeoClient):
+    @supported_years(2020, 2010)
+    def state_place_tract(self, *args, **kwargs):
+        return self._state_place_area(self.geo_tract, *args, **kwargs)
+
+    @supported_years(2020, 2010)
+    def state_place_blockgroup(self, *args, **kwargs):
+        return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
+
+    @supported_years(2020, 2010)
+    def state_place_block(self, *args, **kwargs):
+        return self._state_place_area(self.geo_block, *args, **kwargs)
+
+    @supported_years(2020, 2010)
+    def geo_block(self, fields, geojson_geometry, year):
+        if year is None:
+            year = self.default_year
+
+        filtered_blocks = AreaFilter(geojson_geometry,
+                                     GEO_URLS['blocks'][year])
+
+        for block, intersection_proportion in filtered_blocks:
+            context = {'state': block['properties']['STATE'],
+                       'county': block['properties']['COUNTY'],
+                       'tract': block['properties']['TRACT']}
+            within = 'state:{state} county:{county} tract:{tract}'.format(**context)
+
+            block_id = block['properties']['BLOCK']
+            result = self.get(fields,
+                              {'for': 'block:{}'.format(block_id),
+                               'in':  within}, year)
+
+            if result:
+                result, = result
+            else:
+                result = {}
+
+            yield block, result, intersection_proportion
+
 
 class Census(census.Census):
     def __init__(self, key, year=None, session=None):
         super(Census, self).__init__(key, year, session)
         self.acs5 = ACS5Client(key, year, session)
         self.sf1 = SF1Client(key, year, session)
+        self.pl = PLClient(key, year, session)
