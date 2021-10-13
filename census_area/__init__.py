@@ -1,9 +1,11 @@
 import logging
 import collections
+from functools import lru_cache
 
 import census
 from census.core import supported_years
 import esridump
+import tqdm
 
 from .lodes import OnTheMap
 from .core import AreaFilter, GEO_URLS
@@ -12,8 +14,17 @@ from logging import NullHandler
 
 logging.getLogger(__name__).addHandler(NullHandler())
 
+class HashDict(dict):
+
+    def __hash__(self):
+        return hash(tuple(self.items()))
+
 
 class GeoClient(census.core.Client):
+
+    @lru_cache
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
 
     @supported_years(2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2000)
     def geo_tract(self, fields, geojson_geometry, year=None, **kwargs):
@@ -54,11 +65,14 @@ class GeoClient(census.core.Client):
                        'tract': block_group['properties']['TRACT']}
             within = 'state:{state} county:{county} tract:{tract}'.format(**context)
 
-            block_group_id = block_group['properties']['BLKGRP']
+            tract_blockgroups = self.get(fields,
+                                         HashDict({'for': 'block group:*',
+                                                   'in':  within}),
+                                         year,
+                                         **kwargs)
 
-            result = self.get(fields,
-                              {'for': 'block group:{}'.format(block_group_id),
-                               'in':  within}, year, **kwargs)
+            result = [result for result in tract_blockgroups
+                      if result['block group'] == block_group['properties']['BLKGRP']]
 
             if result:
                 result, = result
@@ -83,7 +97,7 @@ class GeoClient(census.core.Client):
         areas = method(fields, place_geojson, year, **kwargs)
 
         features = []
-        for i, (feature, result, _) in enumerate(areas):
+        for i, (feature, result, _) in tqdm.tqdm(enumerate(areas), total=46000):
             if return_geometry:
                 feature['properties'].update(result)
                 features.append(feature)
@@ -162,57 +176,7 @@ class ACS5Client(census.core.ACS5Client, GeoClient):
         return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
 
 
-class SF1Client(census.core.SF1Client, GeoClient):
-    @supported_years(2010)
-    def state_place_tract(self, *args, **kwargs):
-        return self._state_place_area(self.geo_tract, *args, **kwargs)
-
-    @supported_years(2010)
-    def state_place_blockgroup(self, *args, **kwargs):
-        return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
-
-    @supported_years(2010)
-    def state_place_block(self, *args, **kwargs):
-        return self._state_place_area(self.geo_block, *args, **kwargs)
-
-    @supported_years(2010)
-    def geo_block(self, fields, geojson_geometry, year):
-        if year is None:
-            year = self.default_year
-
-        filtered_blocks = AreaFilter(geojson_geometry,
-                                     GEO_URLS['blocks'][year])
-
-        for block, intersection_proportion in filtered_blocks:
-            context = {'state': block['properties']['STATE'],
-                       'county': block['properties']['COUNTY'],
-                       'tract': block['properties']['TRACT']}
-            within = 'state:{state} county:{county} tract:{tract}'.format(**context)
-
-            block_id = block['properties']['BLOCK']
-            result = self.get(fields,
-                              {'for': 'block:{}'.format(block_id),
-                               'in':  within}, year)
-
-            if result:
-                result, = result
-            else:
-                result = {}
-
-            yield block, result, intersection_proportion
-
-class PLClient(census.core.PLClient, GeoClient):
-    @supported_years(2020, 2010)
-    def state_place_tract(self, *args, **kwargs):
-        return self._state_place_area(self.geo_tract, *args, **kwargs)
-
-    @supported_years(2020, 2010)
-    def state_place_blockgroup(self, *args, **kwargs):
-        return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
-
-    @supported_years(2020, 2010)
-    def state_place_block(self, *args, **kwargs):
-        return self._state_place_area(self.geo_block, *args, **kwargs)
+class GeoBlockClient(GeoClient):
 
     @supported_years(2020, 2010)
     def geo_block(self, fields, geojson_geometry, year):
@@ -228,17 +192,49 @@ class PLClient(census.core.PLClient, GeoClient):
                        'tract': block['properties']['TRACT']}
             within = 'state:{state} county:{county} tract:{tract}'.format(**context)
 
-            block_id = block['properties']['BLOCK']
-            result = self.get(fields,
-                              {'for': 'block:{}'.format(block_id),
-                               'in':  within}, year)
+            tract_blocks = self.get(fields,
+                                    HashDict({'for': 'block:*',
+                                              'in':  within}),
+                                    year)
+            
+            result = [result for result in tract_blocks
+                      if result['block'] == block['properties']['BLOCK']]
 
             if result:
                 result, = result
             else:
+                breakpoint()
                 result = {}
 
             yield block, result, intersection_proportion
+    
+
+class SF1Client(census.core.SF1Client, GeoBlockClient):
+    @supported_years(2010)
+    def state_place_tract(self, *args, **kwargs):
+        return self._state_place_area(self.geo_tract, *args, **kwargs)
+
+    @supported_years(2010)
+    def state_place_blockgroup(self, *args, **kwargs):
+        return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
+
+    @supported_years(2010)
+    def state_place_block(self, *args, **kwargs):
+        return self._state_place_area(self.geo_block, *args, **kwargs)
+
+            
+class PLClient(census.core.PLClient, GeoBlockClient):
+    @supported_years(2020, 2010)
+    def state_place_tract(self, *args, **kwargs):
+        return self._state_place_area(self.geo_tract, *args, **kwargs)
+
+    @supported_years(2020, 2010)
+    def state_place_blockgroup(self, *args, **kwargs):
+        return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
+
+    @supported_years(2020, 2010)
+    def state_place_block(self, *args, **kwargs):
+        return self._state_place_area(self.geo_block, *args, **kwargs)
 
 
 class Census(census.Census):

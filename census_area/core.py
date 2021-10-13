@@ -62,7 +62,7 @@ class AreaFilter(object):
                           'spatialRel': 'esriSpatialRelEnvelopeIntersects',
                           'inSR': '4326',
                           'geometryPrecision': 9,
-                          'orderByFields': 'OID'}
+                          'orderByFields': 'STATE,COUNTY,TRACT,OID'}
         self.area_dumper = esridump.EsriDumper(sub_geography_url,
                                                extra_query_args=geo_query_args)
 
