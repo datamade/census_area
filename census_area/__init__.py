@@ -5,7 +5,6 @@ from functools import lru_cache
 import census
 from census.core import supported_years
 import esridump
-import tqdm
 
 from .lodes import OnTheMap
 from .core import AreaFilter, GEO_URLS
@@ -97,7 +96,7 @@ class GeoClient(census.core.Client):
         areas = method(fields, place_geojson, year, **kwargs)
 
         features = []
-        for i, (feature, result, _) in tqdm.tqdm(enumerate(areas), total=46000):
+        for i, (feature, result, _) in enumerate(areas):
             if return_geometry:
                 feature['properties'].update(result)
                 features.append(feature)

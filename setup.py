@@ -12,7 +12,7 @@ setup(
     name='census_area',
     url='https://github.com/datamade/census_area',
     long_description=long_description,
-    version='0.4.0',
+    version='0.4.1',
     author='Forest Gregg',
     author_email='fgregg@datamade.us',
     description='Census data for arbitrary geographies',
@@ -21,8 +21,7 @@ setup(
                       'census',
                       'shapely',
                       'pyshp',
-                      'pyproj',
-                      'tqdm'],
+                      'pyproj'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
