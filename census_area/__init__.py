@@ -40,8 +40,10 @@ class GeoClient(census.core.Client):
 
             tract_id = tract['properties']['TRACT']
             result = self.get(fields,
-                              {'for': 'tract:{}'.format(tract_id),
-                               'in':  within}, year, **kwargs)
+                              HashDict({'for': 'tract:{}'.format(tract_id),
+                                        'in': within}),
+                              year,
+                              **kwargs)
 
             if result:
                 result, = result
@@ -89,7 +91,14 @@ class GeoClient(census.core.Client):
                                            extra_query_args={'where': search_query,
                                                              'orderByFields': 'OID'})
 
-        place = next(iter(place_dumper))
+        try:
+            place = next(iter(place_dumper))
+        except TypeError as e:
+            if "'<' not supported between instances of 'NoneType' and 'NoneType'" in str(e):
+                raise ValueError(f'Could not find specified place "{place}" in state "{state}"')
+
+            raise e
+
         logging.info(place['properties']['NAME'])
         place_geojson = place['geometry']
 
