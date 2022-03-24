@@ -59,8 +59,9 @@ autodoc_mock_imports = [
     'pyproj'
 ]
 
-from unittest.mock import MagicMock
-sys.modules['functools'] = MagicMock()
+from census_area.core import functools
+from unittest.mock import patch
+patch.object(functools, 'lru_cache')
 
 
 # -- Options for HTML output -------------------------------------------------
