@@ -31,7 +31,8 @@ class GeoClient(census.core.Client):
             year = self.default_year
 
         filtered_tracts = AreaFilter(geojson_geometry,
-                                     GEO_URLS['tracts'][self.default_year])
+                                     GEO_URLS['tracts'][year])
+
 
         for tract, intersection_proportion in filtered_tracts:
             context = {'state': tract['properties']['STATE'],
