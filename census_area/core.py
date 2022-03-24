@@ -15,59 +15,6 @@ from .variables import GEO_URLS
 
 logging.getLogger(__name__).addHandler(NullHandler())
 
-__pdoc__ = {}
-
-STATE_PLACE_DOCSTRING_FMT = '''
-    Retrieve a list of {geography}s and variable values for the specified
-    state and Census Designated Place.
-
-    Arguments:
-
-    * fields (iterable) - Variables to retrieve (see {fields_url})
-    * state (int or str) - state FIPS code (see https://www.census.gov/library/reference/code-lists/ansi.html#state)
-    * place (int or str) - place FIPS code (see https://www.census.gov/library/reference/code-lists/ansi.html#place)
-    * year (int) - data year (default: 2019)
-    * return_geometry (bool) - set True to return results as GeoJSON like object
-    (default: False)
-
-    Returns:
-
-    List with dictionary for each {geography} with variable values.
-'''
-
-GEO_DOCSTRING_FMT = '''
-    Retrieve a list of {geography}s and variable values intersecting with an
-    arbitrary geometry.
-
-    Arguments:
-
-    * fields (iterable) - Variables to retrieve (see {fields_url})
-    * geojson_geometry (dict) - GeoJSON object of arbitrary geometry
-
-    Returns:
-
-    Generator with three-tuple for each {geography} containing: {geography}
-    geometry, dictionary with variable values, and proportion of {geography}
-    that overlaps with the arbitrary geometry
-'''
-
-__pdoc__['ACS5Client.state_place_tract'] = STATE_PLACE_DOCSTRING_FMT.format(
-    geography='tract',
-    fields_url='"Detailed Tables Variables" for relevant year at https://www.census.gov/data/developers/data-sets/acs-5year.html',
-)
-__pdoc__['ACS5Client.state_place_blockgroup'] = STATE_PLACE_DOCSTRING_FMT.format(
-    geography='block group',
-    fields_url='"Detailed Tables Variables" for relevant year at https://www.census.gov/data/developers/data-sets/acs-5year.html',
-)
-__pdoc__['GeoClient.geo_tract'] = GEO_DOCSTRING_FMT.format(
-    geography = 'tract',
-    fields_url = '"Detailed Tables Variables" for relevant year at https://www.census.gov/data/developers/data-sets/acs-5year.html'
-)
-__pdoc__['GeoClient.geo_blockgroup'] = GEO_DOCSTRING_FMT.format(
-    geography = 'block group',
-    fields_url = '"Detailed Tables Variables" for relevant year at https://www.census.gov/data/developers/data-sets/acs-5year.html'
-)
-
 
 class AreaFilter(object):
     def __init__(self, geojson_geometry, sub_geography_url):
@@ -107,8 +54,68 @@ class GeoClient(census.core.Client):
     def get(self, *args, **kwargs):
         return super().get(*args, **kwargs)
 
+    def state_place_tract(self, *args, **kwargs):
+        '''
+        Retrieve variable values for tracts in the specified state and
+        incorporated place.
+
+        Arguments:
+
+        * fields (iterable) - Variables to retrieve
+        * state (int or str) - state FIPS code (see
+          https://www.census.gov/library/reference/code-lists/ansi.html#state)
+        * place (int or str) - place FIPS code (see
+          https://www.census.gov/library/reference/code-lists/ansi.html#place)
+        * year (int) - data year
+        * return_geometry (bool) - set True to return results as GeoJSON like
+          object (default: False)
+
+        Returns:
+
+        List with dictionary for each tract containing variable values.
+        '''
+        return self._state_place_area(self.geo_tract, *args, **kwargs)
+
+    def state_place_blockgroup(self, *args, **kwargs):
+        '''
+        Retrieve variable values for block groups in the specified state and
+        incorporated place.
+
+        Arguments:
+
+        * fields (iterable) - Variables to retrieve
+        * state (int or str) - state FIPS code (see
+          https://www.census.gov/library/reference/code-lists/ansi.html#state)
+        * place (int or str) - place FIPS code (see
+          https://www.census.gov/library/reference/code-lists/ansi.html#place)
+        * year (int) - data year
+        * return_geometry (bool) - set True to return results as GeoJSON like
+          object (default: False)
+
+        Returns:
+
+        List with dictionary for each block group containing variable values.
+        '''
+        return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
+
     @supported_years(2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2000)
     def geo_tract(self, fields, geojson_geometry, year=None, **kwargs):
+        '''
+        Retrieve variable values for tracts intersecting with an arbitrary
+        geometry.
+
+        Arguments:
+
+        * fields (iterable) - Variables to retrieve
+        * geojson_geometry (dict) - Geometry object in ESPG:4326
+        * year (int) - data year
+
+        Returns:
+
+        Generator with three-tuple for each tract containing: tract geometry
+        dictionary containing variable values, and proportion of tract that
+        overlaps with the arbitrary geometry
+        '''
         if year is None:
             year = self.default_year
 
@@ -136,6 +143,22 @@ class GeoClient(census.core.Client):
 
     @supported_years(2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010)
     def geo_blockgroup(self, fields, geojson_geometry, year=None, **kwargs):
+        '''
+        Retrieve variable values for block groups intersecting with an arbitrary
+        geometry.
+
+        Arguments:
+
+        * fields (iterable) - Variables to retrieve
+        * geojson_geometry (dict) - Geometry object in ESPG:4326
+        * year (int) - data year
+
+        Returns:
+
+        Generator with three-tuple for each block group containing: block group
+        geometry dictionary containing variable values, and proportion of block group
+        that overlaps with the arbitrary geometry
+        '''
         if year is None:
             year = self.default_year
 
@@ -257,8 +280,46 @@ class GeoClient(census.core.Client):
 
 class GeoBlockClient(GeoClient):
 
+    def state_place_block(self, *args, **kwargs):
+        '''
+        Retrieve variable values for blocks in the specified state and
+        incorporated place.
+
+        Arguments:
+
+        * fields (iterable) - Variables to retrieve
+        * state (int or str) - state FIPS code (see
+          https://www.census.gov/library/reference/code-lists/ansi.html#state)
+        * place (int or str) - place FIPS code (see
+          https://www.census.gov/library/reference/code-lists/ansi.html#place)
+        * year (int) - data year
+        * return_geometry (bool) - set True to return results as GeoJSON like
+          object (default: False)
+
+        Returns:
+
+        List with dictionary for each block containing variable values.
+        '''
+        return self._state_place_area(self.geo_block, *args, **kwargs)
+
     @supported_years(2020, 2010)
     def geo_block(self, fields, geojson_geometry, year):
+        '''
+        Retrieve variable values for blocks intersecting with an arbitrary
+        geometry.
+
+        Arguments:
+
+        * fields (iterable) - Variables to retrieve
+        * geojson_geometry (dict) - Geometry object in ESPG:4326
+        * year (int) - data year
+
+        Returns:
+
+        Generator with three-tuple for each block containing: block geometry
+        dictionary containing variable values, and proportion of block that overlaps
+        with the arbitrary geometry
+        '''
         if year is None:
             year = self.default_year
 
@@ -295,11 +356,11 @@ class ACS5Client(census.core.ACS5Client, GeoClient):
     '''
     @supported_years(2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010)
     def state_place_tract(self, *args, **kwargs):
-        return self._state_place_area(self.geo_tract, *args, **kwargs)
+        return super().state_place_tract(*args, **kwargs)
 
     @supported_years(2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010)
     def state_place_blockgroup(self, *args, **kwargs):
-        return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
+        return super().state_place_blockgroup(*args, **kwargs)
 
 
 class SF1Client(census.core.SF1Client, GeoBlockClient):
@@ -309,15 +370,15 @@ class SF1Client(census.core.SF1Client, GeoBlockClient):
     '''
     @supported_years(2010)
     def state_place_tract(self, *args, **kwargs):
-        return self._state_place_area(self.geo_tract, *args, **kwargs)
+        return super().state_place_tract(*args, **kwargs)
 
     @supported_years(2010)
     def state_place_blockgroup(self, *args, **kwargs):
-        return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
+        return super().state_place_blockgroup(*args, **kwargs)
 
     @supported_years(2010)
     def state_place_block(self, *args, **kwargs):
-        return self._state_place_area(self.geo_block, *args, **kwargs)
+        return super().state_place_block(*args, **kwargs)
 
 
 class PLClient(census.core.PLClient, GeoBlockClient):
@@ -327,12 +388,12 @@ class PLClient(census.core.PLClient, GeoBlockClient):
     '''
     @supported_years(2020, 2010)
     def state_place_tract(self, *args, **kwargs):
-        return self._state_place_area(self.geo_tract, *args, **kwargs)
+        return super().state_place_tract(*args, **kwargs)
 
     @supported_years(2020, 2010)
     def state_place_blockgroup(self, *args, **kwargs):
-        return self._state_place_area(self.geo_blockgroup, *args, **kwargs)
+        return super().state_place_blockgroup(*args, **kwargs)
 
     @supported_years(2020, 2010)
     def state_place_block(self, *args, **kwargs):
-        return self._state_place_area(self.geo_block, *args, **kwargs)
+        return super().state_place_block(*args, **kwargs)
