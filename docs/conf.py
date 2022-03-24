@@ -59,9 +59,8 @@ autodoc_mock_imports = [
     'pyproj'
 ]
 
-from census_area.core import functools
 from unittest.mock import patch
-patch.object(functools, 'lru_cache')
+patch('census_area.core.functools')
 
 
 # -- Options for HTML output -------------------------------------------------
