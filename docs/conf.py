@@ -46,6 +46,19 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 master_doc = 'index'
 
+autodoc_mock_imports = [
+    'census',
+    'census.core',
+    'shapely.geometry',
+    'shapely.geos',
+    'esridump',
+    'requests',
+    'zipfile',
+    'shapefile',
+    'shapely.ops',
+    'pyproj'
+]
+
 
 # -- Options for HTML output -------------------------------------------------
 
