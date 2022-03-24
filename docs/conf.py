@@ -49,13 +49,11 @@ master_doc = 'index'
 autodoc_mock_imports = [
     'census',
     'census.core',
-    'shapely.geometry',
-    'shapely.geos',
+    'shapely',
     'esridump',
     'requests',
     'zipfile',
     'shapefile',
-    'shapely.ops',
     'pyproj'
 ]
 
