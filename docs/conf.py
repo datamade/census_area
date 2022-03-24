@@ -46,6 +46,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 master_doc = 'index'
 
+# Mock out third-party (and breaking) imports so autodoc can import the
+# census_area module.
 autodoc_mock_imports = [
     'census',
     'census.core',
@@ -56,6 +58,9 @@ autodoc_mock_imports = [
     'shapefile',
     'pyproj'
 ]
+
+from unittest.mock import MagicMock
+sys.modules['functools'] = MagicMock()
 
 
 # -- Options for HTML output -------------------------------------------------
