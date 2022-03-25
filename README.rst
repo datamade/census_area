@@ -16,7 +16,7 @@ Get the library and its dependencies using `pip <https://pypi.python.org/pypi/pi
 Usage
 =====
 
-Check out the documentation. [Link tk]
+`Check out the documentation on Read The Docs <https://census-area.readthedocs.io/en/latest/>`_.
 
 Team
 ====
@@ -45,5 +45,4 @@ Your patches are welcome. Here's our suggested workflow:
 Copyright and attribution
 =========================
 
-Copyright (c) 2016 DataMade. Released under the `MIT License <https://github.com/datamade/your-repo-here/blob/master/LICENSE>`_.
-
+Copyright (c) 2022 DataMade. Released under the `MIT License <https://github.com/datamade/census_area/blob/master/LICENSE.md>`_.
