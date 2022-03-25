@@ -112,7 +112,7 @@ class GeoClient(census.core.Client):
 
         Returns:
 
-        Generator with three-tuple for each tract containing: tract geometry
+        Generator with three-tuple for each tract containing: tract geometry,
         dictionary containing variable values, and proportion of tract that
         overlaps with the arbitrary geometry
         '''
@@ -156,8 +156,8 @@ class GeoClient(census.core.Client):
         Returns:
 
         Generator with three-tuple for each block group containing: block group
-        geometry dictionary containing variable values, and proportion of block group
-        that overlaps with the arbitrary geometry
+        geometry, dictionary containing variable values, and proportion of block
+        group that overlaps with the arbitrary geometry
         '''
         if year is None:
             year = self.default_year
@@ -316,9 +316,9 @@ class GeoBlockClient(GeoClient):
 
         Returns:
 
-        Generator with three-tuple for each block containing: block geometry
-        dictionary containing variable values, and proportion of block that overlaps
-        with the arbitrary geometry
+        Generator with three-tuple for each block containing: block geometry,
+        dictionary containing variable values, and proportion of block that
+        overlaps with the arbitrary geometry
         '''
         if year is None:
             year = self.default_year
