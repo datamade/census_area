@@ -46,22 +46,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 master_doc = 'index'
 
-# Mock out third-party (and breaking) imports so autodoc can import the
-# census_area module.
-autodoc_mock_imports = [
-    'census',
-    'census.core',
-    'shapely',
-    'esridump',
-    'requests',
-    'zipfile',
-    'shapefile',
-    'pyproj'
-]
-
-from unittest.mock import patch
-patch('census_area.core.functools')
-
 
 # -- Options for HTML output -------------------------------------------------
 
