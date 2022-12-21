@@ -191,7 +191,7 @@ class GeoClient(census.core.Client):
         if year is None:
             year = self.default_year
 
-        search_query = "PLACE='{}' AND STATE={}".format(place, state)
+        search_query = "PLACE='{}' AND STATE='{}'".format(place, state)
         place_dumper = esridump.EsriDumper(GEO_URLS['incorporated places'][year],
                                            extra_query_args={'where': search_query,
                                                              'orderByFields': 'OID'})
