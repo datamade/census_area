@@ -12,6 +12,7 @@ GEO_URLS = {
         2018: 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2018/MapServer/8',
         2019: 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2019/MapServer/8',
         2020: 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/6',
+        2021: 'https://tigerweb.geo.census.gov/arcgis/rest/services/Generalized_ACS2021/Tracts_Blocks/MapServer/3'
     },
     'block groups': {
         2000: 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2000/MapServer/10',
@@ -26,6 +27,7 @@ GEO_URLS = {
         2018: 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2017/MapServer/10',
         2019: 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2018/MapServer/10',
         2020: 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/8',
+        2021: 'https://tigerweb.geo.census.gov/arcgis/rest/services/Generalized_ACS2021/Tracts_Blocks/MapServer/4',
     },
     'blocks': {
         2000: 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2000/MapServer/12',
@@ -45,6 +47,7 @@ GEO_URLS = {
         2018: 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2018/MapServer/26',
         2019: 'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2019/MapServer/26',
         2020: 'https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/26',
+        2021: 'https://tigerweb.geo.census.gov/arcgis/rest/services/Generalized_ACS2021/Places_CouSub_ConCity_SubMCD/MapServer/10',
     },
 }
 

@@ -21,7 +21,11 @@ setup(
                       'census',
                       'shapely',
                       'pyshp',
-                      'pyproj'],
+                      'pyproj',
+                      'click'],
+    entry_points = {
+        'console_scripts': ['censusgeo=census_area.cli:main'],
+        },
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
