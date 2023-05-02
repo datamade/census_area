@@ -354,11 +354,11 @@ class ACS5Client(census.core.ACS5Client, GeoClient):
     Client to access American Community Survey 5-Year Estimates (see:
     https://www.census.gov/data/developers/data-sets/acs-5year.html)
     '''
-    @supported_years(2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010)
+    @supported_years(2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010)
     def state_place_tract(self, *args, **kwargs):
         return super().state_place_tract(*args, **kwargs)
 
-    @supported_years(2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010)
+    @supported_years(2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010)
     def state_place_blockgroup(self, *args, **kwargs):
         return super().state_place_blockgroup(*args, **kwargs)
 
