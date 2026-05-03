@@ -128,7 +128,7 @@ class GeoClient(census.core.Client):
             within = 'state:{state} county:{county}'.format(**context)
 
             tract_id = tract['properties']['TRACT']
-            result = self.get(fields,
+            result = self.get(tuple(fields),
                               HashDict({'for': 'tract:{}'.format(tract_id),
                                         'in': within}),
                               year,
@@ -171,7 +171,7 @@ class GeoClient(census.core.Client):
                        'tract': block_group['properties']['TRACT']}
             within = 'state:{state} county:{county} tract:{tract}'.format(**context)
 
-            tract_blockgroups = self.get(fields,
+            tract_blockgroups = self.get(tuple(fields),
                                          HashDict({'for': 'block group:*',
                                                    'in':  within}),
                                          year,
@@ -302,7 +302,7 @@ class GeoBlockClient(GeoClient):
         '''
         return self._state_place_area(self.geo_block, *args, **kwargs)
 
-    @supported_years(2020, 2010)
+    @supported_years(2020, 2010, 2000)
     def geo_block(self, fields, geojson_geometry, year):
         '''
         Retrieve variable values for blocks intersecting with an arbitrary
@@ -332,7 +332,7 @@ class GeoBlockClient(GeoClient):
                        'tract': block['properties']['TRACT']}
             within = 'state:{state} county:{county} tract:{tract}'.format(**context)
 
-            tract_blocks = self.get(fields,
+            tract_blocks = self.get(tuple(fields),
                                     HashDict({'for': 'block:*',
                                               'in':  within}),
                                     year)
@@ -343,7 +343,6 @@ class GeoBlockClient(GeoClient):
             if result:
                 result, = result
             else:
-                breakpoint()
                 result = {}
 
             yield block, result, intersection_proportion

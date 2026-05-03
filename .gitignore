@@ -3,3 +3,4 @@ census_area.egg-info/
 census_area/__pycache__/
 
 docs/_build/
+venv
