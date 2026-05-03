@@ -302,7 +302,7 @@ class GeoBlockClient(GeoClient):
         '''
         return self._state_place_area(self.geo_block, *args, **kwargs)
 
-    @supported_years(2020, 2010)
+    @supported_years(2020, 2010, 2000)
     def geo_block(self, fields, geojson_geometry, year):
         '''
         Retrieve variable values for blocks intersecting with an arbitrary
